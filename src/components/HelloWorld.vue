@@ -1,7 +1,7 @@
 <template lang="html">
   <div class="">
 <!-- top bar -->
-    <div class="w3-cell-row w3-margin-top">
+    <div class="w3-cell-row">
       <div class="w3-cell">
         <button type="button" class="w3-block w3-btn w3-deep-purple" name="button" v-on:click="subtractMonth"><i class="fas fa-chevron-left"></i></button>
       </div>
@@ -14,7 +14,7 @@
     </div>
 <!-- /top bar -->
 <!-- calendar -->
-    <div class="w3-row">
+    <div class="w3-container w3-padding-16">
       <div class="w3-quarter w3-border">
         <div class="w3-row">
           <div class="w3-half">
@@ -37,19 +37,19 @@
       </div>
 <!-- /calendar -->
 <!-- actual agenda -->
-      <div class="w3-rest w3-red">
-        <div class="w3-col w3-green default" style="width:9%">
-          <div class="w3-row">hours</div>
-          <div class="w3-row w3-border" v-for="j in 24" :key="'hour'+j">
+      <div class="w3-rest">
+        <div class="w3-col default" style="width:9%">
+          <div class="w3-row w3-border w3-center w3-xlarge">{{timezone}}</div>
+          <div class="w3-row w3-border w3-center hourHeight" v-for="j in 24" :key="'hour'+j">
             <span v-show="j <=10">0</span>{{j-1}}:00
           </div>
         </div>
-        <div v-for="(day, index) in daysAbrev" :key="'days'+index" class="w3-col w3-blue" style="width:13%">
-          <div class="w3-row w3-border default">
+        <div v-for="(day, index) in daysAbrev" :key="'days'+index" class="w3-col" style="width:12.5%">
+          <div class="w3-row default w3-border w3-center w3-xlarge">
             <span>{{day}} {{numberDaysWeek[index]}}</span>
           </div>
-          <div class="w3-row w3-border pointer" v-for="m in 24" :key="'hour'+m" >
-            <div @click="modalCheck = appointmentInDay(numberDaysWeek[index], m -1)[1]">{{appointmentInDay(numberDaysWeek[index], m -1)[0]}}</div>
+          <div class="w3-row pointer hourHeight appointPad" v-for="m in 24" :key="'hour'+m" @click="modalCheck = appointmentInDay(numberDaysWeek[index], m -1)[1]" :class="{'w3-blue w3-border-left':appointmentInDay(numberDaysWeek[index], m -1)[1] !== 'new', 'w3-border':appointmentInDay(numberDaysWeek[index], m -1)[1] == 'new'}">
+              {{appointmentInDay(numberDaysWeek[index], m -1)[0]}}
           </div>
         </div>
       </div>
@@ -61,25 +61,27 @@
         <div class="w3-container">
           <span class="w3-button w3-display-topright" @click="modalCheck = 'empty'">&times;</span>
           <form @submit.prevent="appointmentToJson(modalCheck)">
-            <input type="text" readonly @click="calendModal = 1" v-bind:placeholder="datevalue"/>
-            <select v-model.number="startHour" required>
-              <option disabled value="">Select start hour</option>
-              <option v-for="hs in 24" :key="'selecthourstart'+hs" v-bind:value="hs-1"><span v-show="hs<=10">0</span>{{hs - 1}}:00</option>
-            </select>
-            <select v-model.number="endHour">
-              <option disabled value="">Select end hour</option>
-              <option v-for="he in 24" :key="'selecthourend'+he" v-bind:value="he-1"><span v-show="he<=10">0</span>{{he - 1}}:00</option>
-            </select>
-            <input type="text" readonly @click="calendModal = 2" v-bind:placeholder="datevalue2"/>
-            <div>
-              <input type="text" v-model="appointmentDesc" placeholder="add a title" required/>
+            <div class="w3-row">
+              <input type="text" v-model="appointmentDesc" placeholder="Add a title" required class="w3-input w3-center w3-bottombar w3-border-blue w3-section w3-round"/>
             </div>
-            <div v-if="modalCheck == 'new'">
-              <button type="submit" class="w3-btn">Submit</button>
+            <div class="w3-row">
+              <input type="text" readonly @click="calendModal = 1" v-bind:placeholder="datevalue" class="w3-input w3-border w3-quarter"/>
+              <select v-model.number="startHour" required class="w3-select w3-border w3-quarter">
+                <option disabled value="">Select start hour</option>
+                <option v-for="hs in 24" :key="'selecthourstart'+hs" v-bind:value="hs-1"><span v-show="hs<=10">0</span>{{hs - 1}}:00</option>
+              </select>
+              <select v-model.number="endHour" class="w3-select w3-quarter w3-border">
+                <option disabled value="">Select end hour</option>
+                <option v-for="he in 24" :key="'selecthourend'+he" v-bind:value="he-1"><span v-show="he<=10">0</span>{{he - 1}}:00</option>
+              </select>
+              <input type="text" readonly @click="calendModal = 2" v-bind:placeholder="datevalue2" class="w3-input w3-border w3-quarter"/>
             </div>
-            <div v-else>
-              <button type="submit" class="w3-btn">Edit</button>
-              <button class="w3-btn" @click="deleteAppointment(modalCheck)">Delete</button>
+            <div v-if="modalCheck == 'new'" class="w3-section">
+              <button type="submit" class="w3-btn w3-blue w3-right w3-margin-bottom">Submit</button>
+            </div>
+            <div v-else class="w3-section">
+              <button class="w3-btn w3-red w3-right w3-margin-bottom" @click="deleteAppointment(modalCheck)"><i class="far fa-trash-alt"></i></button>
+              <button type="submit" class="w3-btn w3-blue w3-right w3-margin-bottom">Edit</button>
             </div>
           </form>
         </div>
@@ -119,11 +121,14 @@
 
 <script>
 import moment from "moment";
+import momentTimezone from 'moment-timezone';
+
 export default {
   name: "HelloWorld",
   data() {
     return {
       today: moment(),
+      timezone: momentTimezone.tz(momentTimezone.tz.guess()).zoneName(),
       dateContext: moment(),
       dateContext2: moment(),
       dateModal: moment(),
@@ -192,16 +197,14 @@ export default {
       return this.today.format("Y");
     },
     numberDaysWeek() {
-      var numberUsed = this.dateContext.day();
-      let a = this.dateContext.clone().date() - numberUsed;
-      let b = this.dateContext.clone().date() - numberUsed + 1;
-      let c = this.dateContext.clone().date() - numberUsed + 2;
-      let d = this.dateContext.clone().date() - numberUsed + 3;
-      let e = this.dateContext.clone().date() - numberUsed + 4;
-      let f = this.dateContext.clone().date() - numberUsed + 5;
-      let g = this.dateContext.clone().date() - numberUsed + 6;
+      let a = this.dateContext.clone().subtract(3, "days").date();
+      let b = this.dateContext.clone().subtract(2, "days").date();
+      let c = this.dateContext.clone().subtract(1, "days").date();
+      let d = this.dateContext.clone().date();
+      let e = this.dateContext.clone().add(1, "days").date();
+      let f = this.dateContext.clone().add(2, "days").date();
+      let g = this.dateContext.clone().add(3, "days").date();
       let result = [a, b, c, d, e, f, g];
-      result.sort();
       return result;
     },
     datevalue() {
@@ -272,22 +275,30 @@ export default {
            }
            else {
              if(moment(element.date).isSame(element.dateEnd, "day")) {
-               if(actualdate.isSame(element.date, "day") && hour >= element.startHour && element.endHour >= hour) {
+               if(actualdate.isSame(element.date, "day") && hour == element.startHour) {
                  result = element.title;
+               }
+               if(actualdate.isSame(element.date, "day") && hour >= element.startHour && element.endHour >= hour) {
                  modalCheckValue = index;
                }
              }
              else {
-               if(actualdate.isSame(element.date, "day") && hour >= element.startHour) {
+               if(actualdate.isSame(element.date, "day") && hour == element.startHour) {
                  result = element.title;
+               }
+               if(actualdate.isSame(element.date, "day") && hour >= element.startHour) {
                  modalCheckValue = index;
+               }
+               if(actualdate.isBetween(element.date, element.dateEnd) && hour == 0) {
+                 result = element.title;
                }
                if(actualdate.isBetween(element.date, element.dateEnd)) {
-                 result = element.title;
                  modalCheckValue = index;
                }
-               if(actualdate.isSame(element.dateEnd, "day") && hour <= element.endHour) {
+               if(actualdate.isSame(element.dateEnd, "day") && hour == 0) {
                  result = element.title;
+               }
+               if(actualdate.isSame(element.dateEnd, "day") && hour <= element.endHour) {
                  modalCheckValue = index;
                }
              }
@@ -301,6 +312,9 @@ export default {
       let appointments = this.appointmentsList;
       appointments.splice(modalCase, 1);
       this.modalCheck = 'empty';
+      let appointmentJson = JSON.stringify(appointments);
+      localStorage.setItem("testJson", appointmentJson);
+      this.JsontoData();
     }
   },
   created() {
@@ -356,5 +370,12 @@ div:empty,
 }
 #id01, #id02 {
   display: block;
+}
+.hourHeight {
+  height: 5vh;
+  line-height: 5vh;
+}
+.appointPad {
+  padding-left: 8px;
 }
 </style>
