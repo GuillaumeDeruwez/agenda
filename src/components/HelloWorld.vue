@@ -54,20 +54,21 @@
           </div>
         </div>
         <div class="w3-col default" style="width:9%">
-          <div class="w3-row w3-border w3-center">{{timezone}}</div>
-          <div class="w3-row w3-border w3-center hourHeight" v-for="j in 24" :key="'hour'+j">
-            <span v-show="j <=10">0</span>{{j-1}}:00
+          <div class="w3-row w3-center">{{timezone}}</div>
+          <div class="w3-row w3-center" v-for="j in 23" :key="'hour'+j" :class="{'hourHeight': j == 1, 'agendaHeight': j > 1}" >
+            <span v-show="j < 10">0</span>{{j}}:00
           </div>
         </div>
         <div v-for="(day, index) in daysAbrev" :key="'days'+index" class="w3-col" style="width:12.5%">
           <div class="w3-row default w3-border w3-center" :class="{'w3-grey':numberDaysWeek[index] == currentDate}">
-            <span>{{day}} {{numberDaysWeek[index]}}</span>
+            <span>{{day}} {{getDay(numberDaysWeek[index])}}</span>
           </div>
-          <div class="w3-row pointer hourHeight appointPad" v-for="m in 24" :key="'hour'+m" @click="openModal(numberDaysWeek[index], m -1)" :class="{'w3-blue w3-border-left':appointmentInDay(numberDaysWeek[index], m -1)[1] !== 'new', 'w3-border':appointmentInDay(numberDaysWeek[index], m -1)[1] == 'new'}">
-              <p :class="{'w3-tooltip': appointmentInDay(numberDaysWeek[index], m -1)[0].notes}">{{appointmentInDay(numberDaysWeek[index], m -1)[0].title}}
-              <span class="w3-text w3-pale-blue padding-left" v-if="appointmentInDay(numberDaysWeek[index], m -1)[0].notes">{{
-                unescape(appointmentInDay(numberDaysWeek[index], m -1)[0].notes)
-                }}</span>
+          <div class="w3-row pointer agendaHeight appointPad" v-for="m in 24" :key="'hour'+m" @click="openModal(numberDaysWeek[index], m, true)" :class="{'w3-blue w3-border-left':appointmentInDay(numberDaysWeek[index], m)[1] !== 'new', 'w3-border':appointmentInDay(numberDaysWeek[index], m)[1] == 'new'}">
+              <p class="margin-0" :class="{'w3-tooltip': appointmentInDay(numberDaysWeek[index], m)[0].notes}">
+                {{appointmentInDay(numberDaysWeek[index], m)[0].title}}
+                <span class="w3-text w3-pale-blue padding-note" v-if="appointmentInDay(numberDaysWeek[index], m)[0].notes">
+                  {{unescape(appointmentInDay(numberDaysWeek[index], m)[0].notes)}}
+                </span>
               </p>
           </div>
         </div>
@@ -91,7 +92,7 @@
               </select>
               <select v-model.number="endHour" class="w3-select w3-quarter w3-border">
                 <option disabled value="">Select end hour</option>
-                <option v-for="he in 24" :key="'selecthourend'+he" v-bind:value="he-1"><span v-if="he<=10">0</span>{{he - 1}}:00</option>
+                <option v-for="he in 24" :key="'selecthourend'+he" v-bind:value="he"><span v-if="he<=10">0</span>{{he}}:00</option>
               </select>
               <input type="date" class="w3-input w3-border w3-quarter" v-model="dateModal2"/>
             </div>
@@ -128,8 +129,8 @@ export default {
       today: moment(),
       timezone: momentTimezone.tz(momentTimezone.tz.guess()).zoneName(),
       dateContext: moment(),
-      dateModal: moment(),
-      dateModal2: moment(),
+      dateModal: moment().format("YYYY-MM-DD"),
+      dateModal2: moment().format("YYYY-MM-DD"),
       days: ["S", "M", "T", "W", "T", "F", "S"],
       daysAbrev: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
       modalCheck: "empty",
@@ -179,13 +180,13 @@ export default {
       return this.today.format("Y");
     },
     numberDaysWeek() {
-      let a = this.dateContext.clone().subtract(3, "days").date();
-      let b = this.dateContext.clone().subtract(2, "days").date();
-      let c = this.dateContext.clone().subtract(1, "days").date();
-      let d = this.dateContext.clone().date();
-      let e = this.dateContext.clone().add(1, "days").date();
-      let f = this.dateContext.clone().add(2, "days").date();
-      let g = this.dateContext.clone().add(3, "days").date();
+      let a = this.dateContext.clone().subtract(3, "days").format("YYYY-MM-DD");
+      let b = this.dateContext.clone().subtract(2, "days").format("YYYY-MM-DD");
+      let c = this.dateContext.clone().subtract(1, "days").format("YYYY-MM-DD");
+      let d = this.dateContext.clone().format("YYYY-MM-DD");
+      let e = this.dateContext.clone().add(1, "days").format("YYYY-MM-DD");
+      let f = this.dateContext.clone().add(2, "days").format("YYYY-MM-DD");
+      let g = this.dateContext.clone().add(3, "days").format("YYYY-MM-DD");
       let result = [a, b, c, d, e, f, g];
       return result;
     },
@@ -206,8 +207,8 @@ export default {
     reset() {
       this.modalCheck = "empty";
       this.appointmentNotes = "";
-      this.dateModal2 = moment();
-      this.dateModal = moment();
+      this.dateModal2 = moment().format("YYYY-MM-DD");
+      this.dateModal = moment().format("YYYY-MM-DD");
       this.appointmentDesc ="";
       this.startHour = "";
       this.endHour = "";
@@ -248,47 +249,40 @@ export default {
       this.JsontoData();
       this.reset();
     },
-    appointmentInDay(date, hour) {
+    appointmentInDay(date, hour, forModal) {
       let appointmentslist = this.appointmentsList;
       let result = {};
       let modalCheckValue = "new";
-      let actualdate = this.dateContext.clone().date(date);
-      if(appointmentslist) {
+      let actualdate = moment(date);
+      if(appointmentslist.length > 0) {
          appointmentslist.forEach(function(element, index) {
-           if(element.endHour == "") {
-             if(actualdate.isSame(element.date, "day") && hour >= element.startHour) {
-               result = element;
-             }
-             else if(actualdate.isSame(element.dateEnd, "day")) {
-               result = element;
-             }
+           if(forModal && actualdate.isBetween(element.date, element.dateEnd, null, '[]')) {
+             result = element;
+             modalCheckValue = index;
            }
            else {
-             if(moment(element.date).isSame(element.dateEnd, "day")) {
-               if(actualdate.isSame(element.date, "day") && hour == element.startHour) {
-                 result = element;
-               }
-               if(actualdate.isSame(element.date, "day") && hour >= element.startHour && element.endHour >= hour) {
-                 modalCheckValue = index;
-               }
+             if(actualdate.isSame(element.date, 'day') && hour == element.startHour + 1 && element.startHour == 0) {
+               result = element;
              }
-             else {
-               if(actualdate.isSame(element.date, "day") && hour == element.startHour) {
-                 result = element;
+             if(actualdate.isSame(element.date, 'day') && hour == element.startHour) {
+               result = element;
+             }
+             if(actualdate.isBetween(element.date, element.dateEnd, null, "(]" ) && hour == 1 ) {
+               result = element;
+             }
+             if(actualdate.isBetween(element.date, element.dateEnd)) {
+               modalCheckValue = index;
+             }
+             if(actualdate.isBetween(element.date, element.dateEnd, null, '(]' ) && hour <= element.endHour ) {
+               modalCheckValue = index;
+             }
+             if(actualdate.isSame(element.date, 'day')) {
+               if(actualdate.isSame(element.dateEnd, "day")) {
+                 if(hour >= element.startHour && hour <= element.endHour) {
+                   modalCheckValue = index;
+                 }
                }
-               if(actualdate.isSame(element.date, "day") && hour >= element.startHour) {
-                 modalCheckValue = index;
-               }
-               if(actualdate.isBetween(element.date, element.dateEnd) && hour == 0) {
-                 result = element;
-               }
-               if(actualdate.isBetween(element.date, element.dateEnd)) {
-                 modalCheckValue = index;
-               }
-               if(actualdate.isSame(element.dateEnd, "day") && hour == 0) {
-                 result = element;
-               }
-               if(actualdate.isSame(element.dateEnd, "day") && hour <= element.endHour) {
+               else if(hour >= element.startHour) {
                  modalCheckValue = index;
                }
              }
@@ -310,16 +304,19 @@ export default {
       let data = validator.unescape(note);
       return data;
     },
-    openModal(param1, param2) {
-      let array = this.appointmentInDay(param1, param2);
+    openModal(param1, param2, param3) {
+      let array = this.appointmentInDay(param1, param2, param3);
       this.modalCheck = array[1];
       // {date: this.dateModal, dateEnd: this.dateModal2, title: this.sanitizedTitle, startHour: this.startHour, endHour: this.endHour, notes: this.sanitizedNotes};
       array[0].notes ? this.appointmentNotes = this.unescape(array[0].notes): this.appointmentNotes = "";
-      array[0].date ? this.dateModal = array[0].date : this.dateModal = moment();
-      array[0].dateEnd ? this.dateModal2 = array[0].dateEnd : this.dateModal2 = moment();
+      array[0].date ? this.dateModal = array[0].date : this.dateModal = moment().format("YYYY-MM-DD");
+      array[0].dateEnd ? this.dateModal2 = array[0].dateEnd : this.dateModal2 = moment().format("YYYY-MM-DD");
       array[0].title ? this.appointmentDesc = unescape(array[0].title) : this.appointmentDesc ="";
-      array[0].startHour ? this.startHour = array[0].startHour : this.startHour = "";
+      array[0].startHour >= 0 ? this.startHour = array[0].startHour : this.startHour = "";
       array[0].endHour ? this.endHour = array[0].endHour : this.endHour = "";
+    },
+    getDay(param) {
+      return moment(param).date();
     }
   },
   created() {
@@ -329,8 +326,15 @@ export default {
 </script>
 
 <style lang="css">
-.padding-left {
+.margin-0 {
+  margin: 0;
+}
+.padding-note {
   padding-left: 5px;
+  padding-right: 5px;
+}
+.padding-hour {
+  padding-left: 16px;
 }
 .pointer { 
   cursor: pointer; 
@@ -389,6 +393,10 @@ div:empty,
   display: block;
 }
 .hourHeight {
+  height: 7.5vh;
+  line-height: 9vh;
+}
+.agendaHeight {
   height: 5vh;
   line-height: 5vh;
 }
