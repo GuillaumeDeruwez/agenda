@@ -1,29 +1,27 @@
-# agenda
+# Api REST and front-end about Meteorites
+- **When ?** : 26/07 - 01-08/2019
+- **Who ?** : - [Guillaume Deruwez](https://github.com/GuillaumeDeruwez) : Everything
+- **The app** : https://guillaumederuwez.github.io/agenda/
 
-## Project setup
-```
-npm install
-```
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+## Specifications :
+Creation of a functionnal agenda.
 
-### Compiles and minifies for production
-```
-npm run build
-```
+## Our response:
+- Created a functionnal agenda, based on the look of the google agenda but without using any existing agenda library or module.
+- The agenda was written using the vue framework and w3,css for styling.
+- The agenda works entirely using local storage.
 
-### Run your tests
-```
-npm run test
-```
 
-### Lints and fixes files
-```
-npm run lint
-```
+## Our difficulties :
+- No specific difficulties aside from the specific logic used in the code to display the appointments at the correct time and date.
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+## Libraries/frameworks used:
+#### Used in the front
+- [font awesome](https://fontawesome.com/)
+- [W3.css](https://www.w3schools.com/w3css/default.asp)
+- [Vue.js](https://vuejs.org/)
+- [Moment](https://momentjs.com/)
+- [Validator.js](https://github.com/chriso/validator.js#validators)
+- [Moment-timezone](https://momentjs.com/timezone/)
+
