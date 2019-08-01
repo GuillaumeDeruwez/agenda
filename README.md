@@ -1,4 +1,4 @@
-# Api REST and front-end about Meteorites
+# Agenda made as practice
 - **When ?** : 26/07 - 01-08/2019
 - **Who ?** : - [Guillaume Deruwez](https://github.com/GuillaumeDeruwez) : Everything
 - **The app** : https://guillaumederuwez.github.io/agenda/
