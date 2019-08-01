@@ -3,13 +3,13 @@
 <!-- top bar -->
     <div class="w3-cell-row">
       <div class="w3-cell">
-        <button type="button" class="w3-block w3-btn w3-deep-purple" name="button" v-on:click="subtractMonth"><i class="fas fa-chevron-left"></i></button>
+        <button type="button" class="w3-block w3-btn w3-deep-purple" name="button" v-on:click="subtractMonth" aria-label="move back one month"><i class="fas fa-chevron-left"></i></button>
       </div>
       <div class="w3-cell w3-center w3-teal">
         <h4 class="line w3-margin-left w3-margin-right">{{month}} {{year}}</h4>
       </div>
       <div class="w3-cell">
-        <button type="button" class="w3-block w3-btn w3-deep-purple" name="button" v-on:click="addMonth"><i class="fas fa-chevron-right" ></i></button>
+        <button type="button" class="w3-block w3-btn w3-deep-purple" name="button" v-on:click="addMonth" aria-label="move forward one month"><i class="fas fa-chevron-right" ></i></button>
       </div>
     </div>
 <!-- /top bar -->
@@ -18,13 +18,13 @@
       <div class="w3-quarter w3-hide-medium w3-hide-small">
         <div class="w3-row"> 
           <div class="w3-cell">
-            <button type="button" class="w3-btn" name="button" v-on:click="subtractMonth"><i class="fas fa-chevron-left"></i></button>
+            <button type="button" class="w3-btn" name="button" v-on:click="subtractMonth" aria-label="move back one month"><i class="fas fa-chevron-left"></i></button>
           </div>
           <div class="w3-cell">
             <p>{{month}} {{year}}</p>
           </div>
           <div class="w3-cell">
-            <button type="button" class="w3-btn" name="button" v-on:click="addMonth"><i class="fas fa-chevron-right" ></i></button>
+            <button type="button" class="w3-btn" name="button" v-on:click="addMonth" aria-label="move forward one month"><i class="fas fa-chevron-right" ></i></button>
           </div>
         </div>
         <div class="w3-row">
@@ -44,13 +44,13 @@
       <div class="w3-rest">
         <div class="w3-cell">
           <div class="w3-cell">
-            <button type="button" class="w3-btn" name="button" v-on:click="subtractWeek"><i class="fas fa-chevron-left"></i></button>
+            <button type="button" class="w3-btn" name="button" v-on:click="subtractWeek" aria-label="move back one week"><i class="fas fa-chevron-left"></i></button>
           </div>
           <div class="w3-cell">
             <p>Change week</p>
           </div>
           <div class="w3-cell">
-            <button type="button" class="w3-btn" name="button" v-on:click="addWeek"><i class="fas fa-chevron-right" ></i></button>
+            <button type="button" class="w3-btn" name="button" v-on:click="addWeek" aria-label="move forward one week"><i class="fas fa-chevron-right" ></i></button>
           </div>
         </div>
         <div class="w3-col default" style="width:9%">
@@ -103,7 +103,7 @@
               <button type="submit" class="w3-btn w3-blue w3-right w3-margin-bottom">Submit</button>
             </div>
             <div v-else class="w3-section">
-              <button class="w3-btn w3-red w3-right w3-margin-bottom" @click="deleteAppointment(modalCheck)">
+              <button class="w3-btn w3-red w3-right w3-margin-bottom" @click="deleteAppointment(modalCheck)" aria-label="delete appointment">
                 <i class="far fa-trash-alt"></i>
               </button>
               <button type="submit" class="w3-btn w3-blue w3-right w3-margin-bottom">Edit</button>
@@ -254,7 +254,7 @@ export default {
       let result = {};
       let modalCheckValue = "new";
       let actualdate = moment(date);
-      if(appointmentslist.length > 0) {
+      if(appointmentslist) {
          appointmentslist.forEach(function(element, index) {
            if(forModal && actualdate.isBetween(element.date, element.dateEnd, null, '[]')) {
              result = element;
